@@ -73,15 +73,8 @@ task rubyTest(dependsOn: rubyBootstrap) << {
   jruby.getEnvironment().put("GEM_HOME", "${buildDir}/ruby".toString())
   jruby.getEnvironment().put("GEM_SPEC_CACHE", "${buildDir}/cache".toString())
   jruby.getEnvironment().put("GEM_PATH", "${buildDir}/ruby".toString())
-  jruby.runScriptlet("puts org.apache.logging.log4j.Logger")
+  jruby.runScriptlet('require "jars"');
+  jruby.runScriptlet("require 'rspec/core/runner'");
+  jruby.runScriptlet("require 'rspec'");
+  jruby.runScriptlet("RSpec::Core::Runner.run(['spec'])");
 }
-
-//bootstrap.dependsOn(":logstash-core-event-java:copyGemjar")
-//bootstrap.dependsOn(":logstash-core:jar")
-//bootstrap.dependsOn("copyDependencyJars")
-
-//task copyDependencyJars(type: Copy) {
-  //into "${projectDir}/vendor/jars"
-  //from configurations.runtime
-//}
-

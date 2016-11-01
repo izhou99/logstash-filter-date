@@ -30,9 +30,4 @@ def bundler()
   Gem::Specification.reset
   Bundler::reset!
   Bundler::CLI.start([ "install" ])
-rescue => e
-  require "rubygems/commands/environment_command"
-  cmd = Gem::Commands::EnvironmentCommand.new
-  cmd.execute
-  raise e
 end
