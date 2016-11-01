@@ -19,14 +19,18 @@
 
 package org.logstash.filters.parser;
 
+import org.joda.time.Instant;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.util.Map;
+public class JodaParser implements TimestampParser {
+  private final DateTimeFormatter parser;
 
-public class JodaParser {
-  private final Map<String, DateTimeFormatter> fieldParsers;
+  public JodaParser(DateTimeFormatter parser) {
+    this.parser = parser;
+  }
 
-  public JodaParser(Map<String, DateTimeFormatter> fieldParsers) {
-    this.fieldParsers = fieldParsers;
+  @Override
+  public Instant parse(String value) {
+    return new Instant(parser.parseMillis(value));
   }
 }

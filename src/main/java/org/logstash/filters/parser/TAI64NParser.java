@@ -19,8 +19,11 @@
 
 package org.logstash.filters.parser;
 
-/**
- * Created by jls on 10/31/2016.
- */
-public class TAI64NParser {
+import org.joda.time.Instant;
+
+public class TAI64NParser implements TimestampParser {
+  @Override
+  public Instant parse(String value) {
+    return null;
+  }
 }

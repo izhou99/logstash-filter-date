@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="logstash-core-event-java">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/jar/logstash-core-event-java.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

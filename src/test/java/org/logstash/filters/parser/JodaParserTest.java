@@ -17,15 +17,25 @@
  * under the License.
  */
 
-package org.logstash.filters;
+package org.logstash.filters.parser;
 
+import org.joda.time.Instant;
 import org.junit.Test;
 import org.logstash.filters.parser.JodaParserBuilder;
+import static org.junit.Assert.assertEquals;
 
-public class DateFilterBuilderTest {
-  @Test
-  public void empty() {
+public class JodaParserTest {
+  @Test(expected = UnsupportedOperationException.class)
+  public void emptyShouldFail() {
     new JodaParserBuilder().build();
   }
 
+  @Test
+  public void onePattern() {
+    JodaParserBuilder b = new JodaParserBuilder();
+    b.addPattern("YYYY");
+    JodaParser parser = b.build();
+    Instant instant = parser.parse("2016");
+    assertEquals(2016, instant.toDateTime().getYear());
+  }
 }

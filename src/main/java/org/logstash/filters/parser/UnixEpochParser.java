@@ -19,12 +19,15 @@
 
 package org.logstash.filters.parser;
 
-import org.joda.time.format.DateTimeParser;
-import org.joda.time.format.DateTimeParserBucket;
+import org.joda.time.Instant;
 
-public class UnixEpochParser implements DateParser {
+public class UnixEpochParser implements TimestampParser {
   @Override
-  public long parseMillis(String value) {
-    return Long.parseLong(value);
+  public Instant parse(String value) {
+    if (value.contains(".")) {
+      return new Instant((long)(Double.parseDouble(value) * 1000));
+    } else {
+      return new Instant(Long.parseLong(value));
+    }
   }
 }

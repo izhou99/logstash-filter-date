@@ -23,57 +23,47 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
-import org.logstash.filters.DateFilter;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 
 public class JodaParserBuilder {
   private DateTimeZone timezone;
   private Locale locale;
-  private Map<String, List<String>> fieldPatterns = new TreeMap<>();
+  private List<String> patterns = new LinkedList<>();
 
   public JodaParserBuilder() {
   }
 
-  public void addFormat(String fieldref, String format) {
-    List<String> parsers = getPatternsList(fieldref);
-
-    switch (format) {
+  public void addPattern(String pattern) {
+    switch (pattern) {
       case "ISO8601":
-        addFormat(fieldref, "yyyy-MM-dd HH:mm:ss.SSSZ");
-        addFormat(fieldref, "yyyy-MM-dd HH:mm:ss.SSS");
-        addFormat(fieldref, "yyyy-MM-dd HH:mm:ss,SSSZ");
-        addFormat(fieldref, "yyyy-MM-dd HH:mm:ss,SSS");
+        addPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
+        addPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        addPattern("yyyy-MM-dd HH:mm:ss,SSSZ");
+        addPattern("yyyy-MM-dd HH:mm:ss,SSS");
         break;
       default:
-        parsers.add(format);
+        patterns.add(pattern);
     }
   }
 
-  private List<String> getPatternsList(String fieldref) {
-    if (fieldPatterns.containsKey(fieldref)) {
-      return fieldPatterns.get(fieldref);
-    }
-    return fieldPatterns.put(fieldref, new LinkedList<>());
-  }
-
-  private DateTimeFormatter buildDateParser(List<String> patterns) {
+  private DateTimeFormatter buildDateParser() {
+    // XXX: What about patterns with no year?
     DateTimeFormatterBuilder fb = new DateTimeFormatterBuilder();
-
     patterns.stream()
             .map(DateTimeFormat::forPattern)
             .forEach(fb::append);
 
     /* zone and locale can be null as permitted by joda-time. */
-    return fb.toFormatter().withLocale(locale).withZone(timezone);
+    return fb.toFormatter().withLocale(locale).withZone(timezone).withOffsetParsed();
   }
 
   public JodaParser build() {
-    Map<String, DateTimeFormatter> fieldParsers = new TreeMap<>();
-
-    fieldPatterns.entrySet().stream()
-            .forEach(entry -> fieldParsers.put(entry.getKey(), buildDateParser(entry.getValue())));
-
-    return new JodaParser(fieldParsers);
+    if (patterns.isEmpty()) {
+      throw new UnsupportedOperationException("Cannot build JodaParser because no patterns were given");
+    }
+    return new JodaParser(buildDateParser());
   }
 }

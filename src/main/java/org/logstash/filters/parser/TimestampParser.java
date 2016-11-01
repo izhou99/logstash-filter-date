@@ -19,9 +19,8 @@
 
 package org.logstash.filters.parser;
 
-/**
- * Created by jls on 10/31/2016.
- */
-public interface DateParser {
-  long parseMillis(String value);
+import org.joda.time.Instant;
+
+public interface TimestampParser {
+  Instant parse(String value);
 }

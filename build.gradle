@@ -73,12 +73,19 @@ task rubyTest(dependsOn: rubyBootstrap) << {
   jruby.getEnvironment().put("GEM_HOME", "${buildDir}/ruby".toString())
   jruby.getEnvironment().put("GEM_SPEC_CACHE", "${buildDir}/cache".toString())
   jruby.getEnvironment().put("GEM_PATH", "${buildDir}/ruby".toString())
-  jruby.runScriptlet(configurations.runtime.collect { r -> "require '${r}'" }.join("\n"))
-  println configurations.runtime.collect { r -> "require '${r}'" }.join("\n")
-  jruby.runScriptlet("require 'java'\n"
-          "require 'rspec/core/runner'\n" +
-          "require 'rspec'\n" +
-          "RSpec::Core::Runner.run(['./spec/'])\n")
+  def reqs = configurations.runtime.collect { r -> "p %q{${r}}.split(/\\\\/)[-1] => require(%q{${r}})" }.join("\n")
+  jruby.runScriptlet("p '---'")
+  def cp = configurations.runtime.collect { r -> "\$CLASSPATH << %q{${r}}" }.join("\n")
+
+  jruby.runScriptlet("${reqs}\n${cp}\nputs \$CLASSPATH.sort.join('\n')")
+  jruby.runScriptlet("p '---'")
+
+  jruby.runScriptlet(reqs)
+  jruby.runScriptlet("puts org.apache.logging.log4j.Logger")
+  //jruby.runScriptlet("require 'java'\n"
+          //"require 'rspec/core/runner'\n" +
+          //"require 'rspec'\n" +
+          //"RSpec::Core::Runner.run(['./spec/'])\n")
 }
 
 //bootstrap.dependsOn(":logstash-core-event-java:copyGemjar")
