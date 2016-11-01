@@ -33,12 +33,13 @@ public class DateFilter {
   private String targetField;
   private String tagOnFailure;
 
-  public static configure(Map<String, Object>) {
+  public static void configure(Map<String, Object> settings) {
     // ???
   }
 
-  public DateFilter(Map<String, TimestampParser[]> fieldParsers, String targetField, String tagOnFailure) {
-    this.fieldParsers = fieldParsers;
+  public DateFilter(String sourceField, TimestampParser[] parsers, String targetField, String tagOnFailure) {
+    this.sourceField = sourceField;
+    this.parsers = parsers;
     this.targetField = targetField;
     this.tagOnFailure = tagOnFailure;
   }
@@ -49,7 +50,8 @@ public class DateFilter {
 
   public Event[] receive(Event[] events) {
     for (Event event : events) {
-      String input = event.getField(sourceField);
+      // XXX: Check for cast failures
+      String input = (String) event.getField(sourceField);
       boolean success = false;
       handleField:
       for (TimestampParser parser : parsers) {
@@ -66,6 +68,10 @@ public class DateFilter {
       if (!success) {
         event.tag(tagOnFailure);
       }
+
+
+      // no new evets to add
     }
+    return new Event[0];
   }
 }
