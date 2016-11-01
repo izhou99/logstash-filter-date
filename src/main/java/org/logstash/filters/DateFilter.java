@@ -53,7 +53,6 @@ public class DateFilter {
       // XXX: Check for cast failures
       String input = (String) event.getField(sourceField);
       boolean success = false;
-      handleField:
       for (TimestampParser parser : parsers) {
         try {
           Instant instant = parser.parse(input);
