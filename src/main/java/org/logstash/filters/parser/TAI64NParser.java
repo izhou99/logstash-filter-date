@@ -24,6 +24,10 @@ import org.joda.time.Instant;
 public class TAI64NParser implements TimestampParser {
   @Override
   public Instant parse(String value) {
-    return null;
+    long secondsSinceEpoch = Long.parseLong(value.substring(0, 15), 16);
+    int nanoseconds = Integer.parseInt(value.substring(16, 23), 16);
+    // epochSeconds = ((date[0...16].hex) & ((1<<62) - 1))
+    // nanoSeconds = date[16..24].hex
+    return new Instant(secondsSinceEpoch * 1000 + (nanoseconds / 1_000_000));
   }
 }

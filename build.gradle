@@ -65,7 +65,7 @@ task rubyBootstrap << {
   jruby.runScriptlet("bundler()")
 }
 
-task rubyTest(dependsOn: rubyBootstrap) << {
+task rubyTest(dependsOn: [rubyBootstrap, build]) << {
   def jruby = new org.jruby.embed.ScriptingContainer()
   def paths = jruby.getLoadPaths()
   paths.add("${projectDir}/lib".getStrings()[0])
@@ -74,7 +74,8 @@ task rubyTest(dependsOn: rubyBootstrap) << {
   jruby.getEnvironment().put("GEM_SPEC_CACHE", "${buildDir}/cache".toString())
   jruby.getEnvironment().put("GEM_PATH", "${buildDir}/ruby".toString())
   jruby.runScriptlet('require "jars"');
+  jruby.runScriptlet('require "./build/libs/logstash-filter-date.jar"');
   jruby.runScriptlet("require 'rspec/core/runner'");
   jruby.runScriptlet("require 'rspec'");
-  jruby.runScriptlet("RSpec::Core::Runner.run(['spec'])");
+  jruby.runScriptlet("RSpec::Core::Runner.run(['spec', '--fail-fast'])");
 }

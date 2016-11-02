@@ -25,30 +25,40 @@ import org.logstash.Timestamp;
 import org.logstash.filters.parser.TimestampParser;
 import org.logstash.filters.parser.JodaParser;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class DateFilter {
   private String sourceField;
   private TimestampParser[] parsers;
   private String targetField;
-  private String tagOnFailure;
+  private String[] tagOnFailure;
 
   public static void configure(Map<String, Object> settings) {
     // ???
   }
 
-  public DateFilter(String sourceField, TimestampParser[] parsers, String targetField, String tagOnFailure) {
+  public DateFilter(String sourceField, List<TimestampParser> parsers, String targetField, List<String> tagOnFailure) {
     this.sourceField = sourceField;
-    this.parsers = parsers;
+    this.parsers = parsers.toArray(new TimestampParser[0]);
     this.targetField = targetField;
-    this.tagOnFailure = tagOnFailure;
+    this.tagOnFailure = tagOnFailure.toArray(new String[0]);
   }
 
   public void register() {
     // Nothing to do.
   }
 
+
+
+  public Event[] receive(List<org.logstash.ext.JrubyEventExtLibrary.RubyEvent> rubyEvents) {
+    Event[] events = rubyEvents.stream().map(e -> e.getEvent()).toArray(size -> new Event[size]);
+    return receive(events);
+  }
+
   public Event[] receive(Event[] events) {
+    System.out.println("OKKKK");
     for (Event event : events) {
       // XXX: Check for cast failures
       String input = (String) event.getField(sourceField);
@@ -65,11 +75,13 @@ public class DateFilter {
       }
 
       if (!success) {
-        event.tag(tagOnFailure);
+        for (String t : tagOnFailure) {
+          event.tag(t);
+        }
       }
 
 
-      // no new evets to add
+      // no new events to add
     }
     return new Event[0];
   }

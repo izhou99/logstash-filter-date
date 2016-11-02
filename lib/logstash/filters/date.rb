@@ -21,15 +21,6 @@ require "logstash/timestamp"
 # set in the event. For example, with file input, the timestamp is set to the
 # time of each read.
 class LogStash::Filters::Date < LogStash::Filters::Base
-  if RUBY_ENGINE == "jruby"
-    JavaException = java.lang.Exception
-    UTC = org.joda.time.DateTimeZone.forID("UTC")
-    java_import org.joda.time.LocalDateTime
-    class LocalDateTime
-      java_alias :to_datetime_with_tz, :toDateTime, [Java::org.joda.time.DateTimeZone]
-    end
-  end
-
   config_name "date"
 
   # Specify a time zone canonical ID to be used for date parsing.
@@ -158,6 +149,10 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # successful match
   config :tag_on_failure, :validate => :array, :default => ["_dateparsefailure"]
 
+  def register
+    # nothing
+  end
+
   def initialize(config = {})
     super
     if @match.length < 2
@@ -176,10 +171,30 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     source = @match.first
     jpb = org.logstash.filters.parser.JodaParserBuilder.new
     @match[1..-1].each { |pattern| jpb.addPattern(pattern) }
-    @datefilter = org.logstash.filters.DateFilter.new(jpb.build(), @target, @tag_on_failure)
+
+    parsers = @match[1..-1].collect do |pattern|
+      case pattern
+      when "TAI64N"
+        org.logstash.filters.parser.TAI64NParser.new
+      when "UNIX"
+        org.logstash.filters.parser.UnixEpochParser.new
+      else
+        org.logstash.filters.parser.JodaParserBuilder.new.tap { |jpb| jpb.addPattern(pattern) }.build()
+      end
+    end
+    args = [source, parsers, @target, @tag_on_failure]
+    p :args => args
+    @datefilter = org.logstash.filters.DateFilter.new(*args)
   end # def initialize
 
   def multi_filter(events)
-    @datefilter.receive(events)
+    p :FILTERING => events.first.to_json
+    p :ret => @datefilter.receive(events)
+    p :AFTER => events.first.to_json
+    events
+  end
+
+  def filter(event)
+    multi_filter([event]).first
   end
 end

@@ -403,6 +403,7 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     end
 
     sample "2016 Mar 26 02:00:37" do
+      p :subject => subject
       insist { subject.get("tags") } != ["_dateparsefailure"]
       insist { subject.get("@timestamp").to_s } == "2016-03-26T01:00:37.000Z"
     end
