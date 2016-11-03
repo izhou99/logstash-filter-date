@@ -31,15 +31,27 @@ public class JodaParser implements TimestampParser {
   private final DateTimeFormatter parser;
   private final boolean hasYear;
   private final boolean hasZone;
+  private final boolean dynamicTimeZone;
+  private final String timezone;
 
-  public JodaParser(String pattern, Locale locale, DateTimeZone timezone) {
+  public JodaParser(String pattern, Locale locale, String timezone) {
+    this.timezone = timezone;
+
     // Does the pattern contain year information?
     hasYear = (pattern.contains("Y") || pattern.contains("y"));
 
     // If pattern has no timezone format, we should parse in "local" time.
     hasZone = pattern.contains("Z");
 
-    parser = DateTimeFormat.forPattern(pattern).withLocale(locale).withZone(timezone).withOffsetParsed();
+    dynamicTimeZone = timezone != null && timezone.contains("%{");
+
+    System.out.printf("JodaParser(%s, %s, %s)\n", pattern, locale, timezone);
+
+    if (dynamicTimeZone) {
+      parser = DateTimeFormat.forPattern(pattern).withLocale(locale);
+    } else {
+      parser = DateTimeFormat.forPattern(pattern).withLocale(locale).withZone(DateTimeZone.forID(timezone)).withOffsetParsed();
+    }
   }
 
   @Override
@@ -47,11 +59,22 @@ public class JodaParser implements TimestampParser {
     if (hasYear) {
       return new Instant(parser.parseMillis(value));
     } else {
-      return parseAndGuessYear(value);
+      return parseAndGuessYear(parser, value);
     }
   }
 
-  private Instant parseAndGuessYear(String value) {
+  @Override
+  public Instant parseWithTimeZone(String value, String timezone) {
+    DateTimeZone tz = DateTimeZone.forID(timezone);
+    DateTimeFormatter parserWithZone = parser.withZone(tz).withOffsetParsed();
+    if (hasYear) {
+      return new Instant(parserWithZone.parseMillis(value));
+    } else {
+      return parseAndGuessYear(parserWithZone, value);
+    }
+  }
+
+  private Instant parseAndGuessYear(DateTimeFormatter parser, String value) {
     // if we get here, we need to do some special handling at the time each event is handled
     // because things like the current year could be different, etc.
     DateTime dateTime;

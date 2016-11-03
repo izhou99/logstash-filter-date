@@ -23,4 +23,5 @@ import org.joda.time.Instant;
 
 public interface TimestampParser {
   Instant parse(String value);
+  Instant parseWithTimeZone(String value, String timezone);
 }

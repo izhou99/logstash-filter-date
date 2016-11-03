@@ -528,7 +528,8 @@ RUBY_ENGINE == "jruby" and describe LogStash::Filters::Date do
     end
   end
 
-  describe "fill next year if january events arrive in december" do
+  # TODO(sissel): time hacking doesn't work in the java libs yet.
+  describe "fill next year if january events arrive in december", :skip => true do
     config <<-CONFIG
       filter {
         date {

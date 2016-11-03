@@ -30,4 +30,9 @@ public class TAI64NParser implements TimestampParser {
     // nanoSeconds = date[16..24].hex
     return new Instant(secondsSinceEpoch * 1000 + (nanoseconds / 1_000_000));
   }
+
+  @Override
+  public Instant parseWithTimeZone(String value, String timezone) {
+    return parse(value);
+  }
 }

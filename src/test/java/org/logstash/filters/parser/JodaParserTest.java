@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 public class JodaParserTest {
   @Test(expected = IllegalArgumentException.class)
   public void emptyShouldFail() {
-    new TimestampParserFactory().makeParser("", null, null);
+    new TimestampParserFactory().makeParser("", "en", "UTC");
   }
 
   @Test

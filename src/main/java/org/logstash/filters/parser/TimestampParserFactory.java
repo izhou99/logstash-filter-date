@@ -25,6 +25,7 @@ import org.joda.time.Instant;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import javax.print.attribute.standard.MediaSize;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -37,7 +38,18 @@ public class TimestampParserFactory {
   private static final String UNIX_MS = "UNIX_MS";
   private static final String TAI64N = "TAI64N";
 
-  public static TimestampParser makeParser(String pattern, Locale locale, DateTimeZone zone) {
+  /*
+   * zone is a String because it can be dynamic and come from the event while we parse it.
+   */
+  public static TimestampParser makeParser(String pattern, Locale locale, String zone) {
+    if (locale == null) {
+      locale = Locale.getDefault();
+    }
+
+    if (zone == null) {
+      zone = DateTimeZone.getDefault().getID();
+    }
+
     switch (pattern) {
       case ISO8601: // Short-hand for a few ISO8601-ish formats
         return new CasualISO8601Parser();
@@ -46,9 +58,19 @@ public class TimestampParserFactory {
       case TAI64N: // TAI64N format
         return new TAI64NParser();
       case UNIX_MS: // Unix epoch in milliseconds
-        return (value) -> new Instant(Long.parseLong(value));
+        return new UnixMillisEpochParser();
       default:
+        System.out.printf("New joda: %s (Not: %s, %s, %s, %s)\n", pattern, ISO8601, UNIX, TAI64N, UNIX_MS);
         return new JodaParser(pattern, locale, zone);
     }
+  }
+
+  public static TimestampParser makeParser(String pattern) {
+    return makeParser(pattern, (Locale)null, null);
+  }
+
+  public static TimestampParser makeParser(String pattern, String locale, String zone) {
+    System.out.printf("makeParser(%s, %s, %s)\n", pattern, locale, zone);
+    return makeParser(pattern, locale == null ? null : new Locale(locale), zone);
   }
 }

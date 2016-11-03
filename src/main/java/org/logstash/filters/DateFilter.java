@@ -55,28 +55,38 @@ public class DateFilter {
   }
 
   public Event[] receive(Event[] events) {
-    System.out.println("OKKKK");
     for (Event event : events) {
       // XXX: Check for cast failures
-      String input = (String) event.getField(sourceField);
+      System.out.printf("Event: %s\n", event.toString());
+      System.out.printf("Source: %s\n", sourceField);
+      Object input = (String) event.getField(sourceField);
+      System.out.printf("Parsing: %s\n", input);
+      if (input == null) {
+        continue;
+      }
       boolean success = false;
       for (TimestampParser parser : parsers) {
         try {
-          Instant instant = parser.parse(input);
+          // XXX: I am not certain `input.toString()` is best, here. This allows non-string values
+          // to be parsed, such as Doubles, Longs, etc.
+          Instant instant = parser.parse(input.toString());
           event.setField(targetField, new Timestamp(instant.getMillis()));
           success = true;
+          break;
         } catch (IllegalArgumentException e) {
+          System.out.printf("Exception => %s\n", e);
           // Parsing failed due to invalid input.
           // Keep going
         }
       }
 
-      if (!success) {
+      if (success) {
+        // XXX: Call `filter_matched` on the event
+      } else {
         for (String t : tagOnFailure) {
           event.tag(t);
         }
       }
-
 
     }
 

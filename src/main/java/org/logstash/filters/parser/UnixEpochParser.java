@@ -30,4 +30,9 @@ public class UnixEpochParser implements TimestampParser {
       return new Instant(Long.parseLong(value));
     }
   }
+
+  @Override
+  public Instant parseWithTimeZone(String value, String timezone) {
+    return parse(value);
+  }
 }

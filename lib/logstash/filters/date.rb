@@ -169,18 +169,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     end
 
     source = @match.first
-    jpb = org.logstash.filters.parser.JodaParserBuilder.new
-    @match[1..-1].each { |pattern| jpb.addPattern(pattern) }
-
-    parsers = @match[1..-1].collect do |pattern|
-      case pattern
-      when "TAI64N"
-        org.logstash.filters.parser.TAI64NParser.new
-      when "UNIX"
-        org.logstash.filters.parser.UnixEpochParser.new
-      else
-        org.logstash.filters.parser.JodaParserBuilder.new.tap { |jpb| jpb.addPattern(pattern) }.build()
-      end
+    parsers = @match[1..-1].map do |x| 
+      org.logstash.filters.parser.TimestampParserFactory.makeParser(x, @locale, @timezone)
     end
     args = [source, parsers, @target, @tag_on_failure]
     p :args => args

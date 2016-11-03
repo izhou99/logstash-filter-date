@@ -4,20 +4,22 @@ import org.joda.time.Instant;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
+import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * Created by jls on 11/2/16.
  */
 public class CasualISO8601Parser implements TimestampParser {
-  private static final DateTimeFormatter parser;
+  private static final DateTimeFormatter[] parsers;
 
   static {
-    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-    builder.append(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSZ"));
-    builder.append(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS"));
-    builder.append(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss,SSSZ"));
-    builder.append(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss,SSS"));
-    parser = builder.toFormatter();
+    parsers = new DateTimeFormatter[] {
+            ISODateTimeFormat.dateTimeParser(),
+            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSZ"),
+            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS"),
+            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss,SSSZ"),
+            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss,SSS")
+    };
   }
 
   public CasualISO8601Parser() {
@@ -26,6 +28,20 @@ public class CasualISO8601Parser implements TimestampParser {
 
   @Override
   public Instant parse(String value) {
-    return new Instant(parser.parseMillis(value));
+    RuntimeException lastException = null;
+    for (DateTimeFormatter parser : parsers) {
+      try {
+        return new Instant(parser.parseMillis(value));
+      } catch (IllegalArgumentException e) {
+        lastException = e;
+      }
+    }
+
+    throw lastException;
+  }
+
+  @Override
+  public Instant parseWithTimeZone(String value, String timezone) {
+    return parse(value);
   }
 }

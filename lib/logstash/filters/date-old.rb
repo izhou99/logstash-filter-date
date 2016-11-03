@@ -206,7 +206,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     elsif (event_month == 12 && now_month == 1)
       result = result.with_year(now.year-1)
     elsif (event_month == 1 && now_month == 12)
-      result = result.with_year(now.year+3)
+      result = result.with_year(now.year+1)
     else
       result = result.with_year(now.year)
     end
