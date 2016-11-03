@@ -20,21 +20,20 @@
 package org.logstash.filters.parser;
 
 import org.joda.time.Instant;
+import org.joda.time.format.DateTimeFormat;
 import org.junit.Test;
-import org.logstash.filters.parser.JodaParserBuilder;
+
 import static org.junit.Assert.assertEquals;
 
 public class JodaParserTest {
-  @Test(expected = UnsupportedOperationException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void emptyShouldFail() {
-    new JodaParserBuilder().build();
+    new TimestampParserFactory().makeParser("", null, null);
   }
 
   @Test
   public void onePattern() {
-    JodaParserBuilder b = new JodaParserBuilder();
-    b.addPattern("YYYY");
-    JodaParser parser = b.build();
+    JodaParser parser = new JodaParser("YYYY", null, null);
     Instant instant = parser.parse("2016");
     assertEquals(2016, instant.toDateTime().getYear());
   }

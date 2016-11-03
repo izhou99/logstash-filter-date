@@ -23,9 +23,7 @@ import org.joda.time.Instant;
 import org.logstash.Event;
 import org.logstash.Timestamp;
 import org.logstash.filters.parser.TimestampParser;
-import org.logstash.filters.parser.JodaParser;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +47,6 @@ public class DateFilter {
   public void register() {
     // Nothing to do.
   }
-
 
 
   public Event[] receive(List<org.logstash.ext.JrubyEventExtLibrary.RubyEvent> rubyEvents) {
@@ -81,8 +78,9 @@ public class DateFilter {
       }
 
 
-      // no new events to add
     }
-    return new Event[0];
+
+    // multi_filter api in Logstash::Filters needs us to return the events.
+    return events;
   }
 }
