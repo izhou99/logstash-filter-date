@@ -141,7 +141,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # Other less common date units, such as era (G), century \(C), am/pm (a), and # more, can be learned about on the
   # http://www.joda.org/joda-time/key_format.html[joda-time documentation].
   config :match, :validate => :array, :default => []
-  config :timewindow
+  config :timewindow, :default => 2 ** 63 - 1
 
   # Store the matching timestamp into the given target field.  If not provided,
   # default to updating the `@timestamp` field of the event.
@@ -171,10 +171,8 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     end
 
     source = @match.first
-    timewindow = 2 ** 63 - 1
-    timewindow = @timewindow if @timewindow
 
-    @datefilter = org.logstash.filters.DateFilter.new(source, @target, @tag_on_failure, timewindow) do |event|
+    @datefilter = org.logstash.filters.DateFilter.new(source, @target, @tag_on_failure, @timewindow) do |event|
         filter_matched(event)
     end
 
