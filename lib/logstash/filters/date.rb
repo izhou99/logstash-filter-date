@@ -170,9 +170,11 @@ class LogStash::Filters::Date < LogStash::Filters::Base
     end
 
     source = @match.first
+    timewindow = 2 ** 63 - 1
+    timewindow = @timewindow if @timewindow
 
-    @datefilter = org.logstash.filters.DateFilter.new(source, @target, @tag_on_failure) do |event|
-      filter_matched(event)
+    @datefilter = org.logstash.filters.DateFilter.new(source, @target, @tag_on_failure, timewindow) do |event|
+        filter_matched(event)
     end
 
     @match[1..-1].map do |format|

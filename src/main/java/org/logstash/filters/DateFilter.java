@@ -40,14 +40,16 @@ public class DateFilter {
   private RubySuccessHandler successHandler;
   private final List<ParserExecutor> executors = new ArrayList<>();
   private final ResultSetter setter;
+  private long timeWindow;
 
   public interface RubySuccessHandler {
     void success(RubyEvent event);
   }
 
-  public DateFilter(String sourceField, String targetField, List<String> tagOnFailure, RubySuccessHandler successHandler) {
+  public DateFilter(String sourceField, String targetField, List<String> tagOnFailure, RubySuccessHandler successHandler, long timeWindow) {
     this(sourceField, targetField, tagOnFailure);
     this.successHandler = successHandler;
+    this.timeWindow = timeWindow;
   }
 
   public DateFilter(String sourceField, String targetField, List<String> tagOnFailure) {
@@ -78,6 +80,8 @@ public class DateFilter {
       switch (executeParsers(event)) {
         case FIELD_VALUE_IS_NULL_OR_FIELD_NOT_PRESENT:
           continue;
+        case FIELD_VALUE_IS_OUT_OF_RANGE:
+          continue;
         case SUCCESS:
           if (successHandler != null) {
             successHandler.success(rubyEvent);
@@ -101,6 +105,11 @@ public class DateFilter {
     for (ParserExecutor executor : executors) {
       try {
         Instant instant = executor.execute(input, event);
+        Instant current_instant = new Instant();
+        if (Math.abs(instant.minus(current_instant)) > timeWindow){
+          return ParseExecutionResult.FIELD_VALUE_IS_OUT_OF_RANGE;
+        }
+        //Add case here
         setter.set(event, instant);
         return ParseExecutionResult.SUCCESS;
       } catch (IllegalArgumentException | IOException e) {
