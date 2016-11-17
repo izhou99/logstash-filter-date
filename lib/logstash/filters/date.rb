@@ -141,6 +141,7 @@ class LogStash::Filters::Date < LogStash::Filters::Base
   # Other less common date units, such as era (G), century \(C), am/pm (a), and # more, can be learned about on the
   # http://www.joda.org/joda-time/key_format.html[joda-time documentation].
   config :match, :validate => :array, :default => []
+  config :timewindow
 
   # Store the matching timestamp into the given target field.  If not provided,
   # default to updating the `@timestamp` field of the event.
